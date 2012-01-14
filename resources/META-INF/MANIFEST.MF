@@ -1,0 +1,6 @@
+MIDlet-Name: CameraTest
+MIDlet-Version: 1.0.0
+MIDlet-Vendor: FIRST
+MIDlet-1: CameraTest, , edu.neu.nutrons.test.CameraTest
+MicroEdition-Profile: IMP-1.0
+MicroEdition-Configuration: CLDC-1.1
