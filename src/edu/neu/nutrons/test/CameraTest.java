@@ -8,12 +8,11 @@
 package edu.neu.nutrons.test;
 
 
+import edu.neu.nutrons.test.commands.CommandBase;
+import edu.neu.nutrons.test.commands.DTManualCmd;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Scheduler;
-import edu.neu.nutrons.test.commands.CommandBase;
-import edu.neu.nutrons.test.commands.ExampleCommand;
-import edu.neu.nutrons.test.subsystems.ExampleSubsystem;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -32,7 +31,7 @@ public class CameraTest extends IterativeRobot {
      */
     public void robotInit() {
         // instantiate the command used for the autonomous period
-        autonomousCommand = new ExampleCommand();
+        autonomousCommand = new DTManualCmd();
 
         // Initialize all subsystems
         CommandBase.init();

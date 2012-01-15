@@ -1,21 +1,20 @@
 package edu.neu.nutrons.test.commands;
 
+import edu.neu.nutrons.test.OI;
+import edu.neu.nutrons.test.subsystems.DriveTrain;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.neu.nutrons.test.OI;
-import edu.neu.nutrons.test.subsystems.ExampleSubsystem;
 
 /**
  * The base for all commands. All atomic commands should subclass CommandBase.
  * CommandBase stores creates and stores each control system. To access a
  * subsystem elsewhere in your code in your code use CommandBase.exampleSubsystem
- * @author Author
  */
 public abstract class CommandBase extends Command {
 
+    // Single static instance of OI and each subsystem.
     public static OI oi;
-    // Create a single static instance of all of your subsystems
-    public static ExampleSubsystem exampleSubsystem = new ExampleSubsystem();
+    public static DriveTrain dt = new DriveTrain();
 
     public static void init() {
         // This MUST be here. If the OI creates Commands (which it very likely
@@ -25,8 +24,8 @@ public abstract class CommandBase extends Command {
         // news. Don't move it.
         oi = new OI();
 
-        // Show what command your subsystem is running on the SmartDashboard
-        SmartDashboard.putData(exampleSubsystem);
+        // Show what command each subsystem is running on SmartDashboard.
+        SmartDashboard.putData(dt);
     }
 
     public CommandBase(String name) {
