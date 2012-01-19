@@ -2,6 +2,7 @@ package edu.neu.nutrons.test.commands;
 
 import edu.neu.nutrons.test.OI;
 import edu.neu.nutrons.test.subsystems.DriveTrain;
+import edu.neu.nutrons.test.vision.TargetFinder;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -12,9 +13,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public abstract class CommandBase extends Command {
 
-    // Single static instance of OI and each subsystem.
+    // Single static instance of OI, camera tracker and each subsystem.
     public static OI oi;
     public static DriveTrain dt = new DriveTrain();
+    public static TargetFinder tracker = new TargetFinder();
 
     public static void init() {
         // This MUST be here. If the OI creates Commands (which it very likely
