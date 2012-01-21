@@ -46,14 +46,18 @@ public class TargetFinder {
     }
 
     private void setConstants() {
-        // TODO: Check that these methods actually work.
-        // (It wasn't very clear how to set them up from the docs.)
         hueLow = SmartDashboard.getInt("Camera: hue lower bound", 0);
         hueHigh = SmartDashboard.getInt("Camera: hue upper bound", 0);
-        hueLow = SmartDashboard.getInt("Camera: saturation lower bound", 0);
-        hueHigh = SmartDashboard.getInt("Camera: saturation upper bound", 0);
-        hueLow = SmartDashboard.getInt("Camera: lightness lower bound", 0);
-        hueHigh = SmartDashboard.getInt("Camera: lightness upper nound", 0);
+        satLow = SmartDashboard.getInt("Camera: saturation lower bound", 0);
+        satHigh = SmartDashboard.getInt("Camera: saturation upper bound", 0);
+        lumLow = SmartDashboard.getInt("Camera: lightness lower bound", 0);
+        lumHigh = SmartDashboard.getInt("Camera: lightness upper nound", 0);
+        SmartDashboard.putInt("Camera: hue lower bound", hueLow);
+        SmartDashboard.putInt("Camera: hue upper bound", hueHigh);
+        SmartDashboard.putInt("Camera: saturation lower bound", satLow);
+        SmartDashboard.putInt("Camera: saturation upper bound", satHigh);
+        SmartDashboard.putInt("Camera: lightness lower bound", lumLow);
+        SmartDashboard.putInt("Camera: lightness upper nound", lumHigh);
     }
 
     private double particleScore(double area, double convexArea,
