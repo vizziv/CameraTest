@@ -7,7 +7,7 @@ package edu.neu.nutrons.test;
  */
 public class Utils {
 
-    public static double absFalloff(double x, double center) {
-        return 1 - Math.abs(x/center - 1);
+    public static double falloff(double x, double center) {
+        return 1/((x/center - 1) * (x*center - 1) + 1);
     }
 }

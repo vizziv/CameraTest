@@ -24,70 +24,72 @@ public class TargetFinder {
     //                    (0,1) (1,1) (2,1) etc.
 
     // TODO: Tune these constants.
-    private int hueLow = 0;
-    private int hueHigh = 0;
-    private int satLow = 0;
-    private int satHigh = 0;
-    private int lumLow = 0;
-    private int lumHigh = 0;
+    private int hueLow = 42;
+    private int hueHigh = 128;
+    private int satLow = 115;
+    private int satHigh = 255;
+    private int lumLow = 196;
+    private int lumHigh = 255;
     private double idealAreaPercent = 80.0/432.0; // (tape area)/(rectangle area)
     private double idealRatio = 4.0/3.0;
     private double minScore = .5;
-    private int minArea = 250;
+    private int minArea = 500;
 
-    AxisCamera cam = AxisCamera.getInstance();
+    AxisCamera cam;
     private ColorImage colImage;
     private BinaryImage binImage;
     private Target bestTarget = Target.InvalidTarget;
     private int imageHeight;
 
     public TargetFinder() {
+        cam = AxisCamera.getInstance();
+        cam.writeResolution(AxisCamera.ResolutionT.k320x240);
         imageHeight = cam.getResolution().height;
     }
 
     private void setConstants() {
-        hueLow = SmartDashboard.getInt("Camera: hue lower bound", 0);
-        hueHigh = SmartDashboard.getInt("Camera: hue upper bound", 0);
-        satLow = SmartDashboard.getInt("Camera: saturation lower bound", 0);
-        satHigh = SmartDashboard.getInt("Camera: saturation upper bound", 0);
-        lumLow = SmartDashboard.getInt("Camera: lightness lower bound", 0);
-        lumHigh = SmartDashboard.getInt("Camera: lightness upper nound", 0);
         SmartDashboard.putInt("Camera: hue lower bound", hueLow);
         SmartDashboard.putInt("Camera: hue upper bound", hueHigh);
         SmartDashboard.putInt("Camera: saturation lower bound", satLow);
         SmartDashboard.putInt("Camera: saturation upper bound", satHigh);
         SmartDashboard.putInt("Camera: lightness lower bound", lumLow);
-        SmartDashboard.putInt("Camera: lightness upper nound", lumHigh);
+        SmartDashboard.putInt("Camera: lightness upper bound", lumHigh);
+        hueLow = SmartDashboard.getInt("Camera: set hue lower bound", hueLow);
+        hueHigh = SmartDashboard.getInt("Camera: set hue upper bound", hueHigh);
+        satLow = SmartDashboard.getInt("Camera: set saturation lower bound", satLow);
+        satHigh = SmartDashboard.getInt("Camera: set saturation upper bound", satHigh);
+        lumLow = SmartDashboard.getInt("Camera: set lightness lower bound", lumLow);
+        lumHigh = SmartDashboard.getInt("Camera: set lightness upper nound", lumHigh);
     }
 
     private double particleScore(double area, double convexArea,
                                  double bboxWidth, double bboxHeight) {
         double areaPercent = area / convexArea;
         double ratio = bboxWidth / bboxHeight;
-        return Utils.absFalloff(areaPercent, idealAreaPercent) *
-                Utils.absFalloff(ratio, idealRatio);
+        return Utils.falloff(areaPercent, idealAreaPercent) *
+                Utils.falloff(ratio, idealRatio);
     }
 
-    public void processImage() {
+    public boolean processImage() {
         setConstants();
-        if(cam.freshImage()) {
+        boolean success = cam.freshImage();
+        if(success) {
             try {
                 colImage = cam.getImage();
-                binImage = colImage.thresholdHSL(hueLow, hueHigh,
+                binImage = colImage.thresholdHSV(hueLow, hueHigh,
                                                  satLow, satHigh,
                                                  lumLow, lumHigh);
                 Pointer im = binImage.image;
                 int numParticles = NIVision.countParticles(im);
+                SmartDashboard.putInt("Number of particles", numParticles);
                 // Loop through every particle and calculate a score for each.
                 // Partciles that have good enough scores are targets.
                 // Keep track of the highest target; that's the one we want.
-                double minY = imageHeight; // high in air = low pixel #
+                double best = 0;
                 bestTarget = Target.InvalidTarget;
                 for(int i = 0; i < numParticles; i++) {
                     double area = NIVision.MeasureParticle(im, i, false,
                             NIVision.MeasurementType.IMAQ_MT_AREA);
-                    double convexArea = NIVision.MeasureParticle(im, i, false,
-                            NIVision.MeasurementType.IMAQ_MT_CONVEX_HULL_AREA);
                     double bboxWidth = NIVision.MeasureParticle(im, i, false,
                             NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH);
                     double bboxHeight = NIVision.MeasureParticle(im, i, false,
@@ -96,13 +98,19 @@ public class TargetFinder {
                             NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_LEFT);
                     double bboxCornerY = NIVision.MeasureParticle(im, i, false,
                             NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_TOP);
-                    double score = particleScore(area, convexArea, bboxHeight, bboxWidth);
-                    // Tiny particles that happen to have a good score don't count.
-                    if(score > minScore && convexArea > minArea) {
-                        if(bboxCornerY + bboxHeight/2 <= minY) {
-                            bestTarget = new Target(bboxWidth, bboxHeight,
-                                                    bboxCornerX, bboxCornerY);
-                        }
+                    //double convexArea = NIVision.MeasureParticle(im, i, false,
+                    //        NIVision.MeasurementType.IMAQ_MT_CONVEX_HULL_AREA);
+                    double convexArea = bboxWidth*bboxHeight;
+                    double score = particleScore(area, convexArea, bboxWidth, bboxHeight);
+                    if(score >= best) {
+                        best = score;
+                        bestTarget = new Target(bboxWidth, bboxHeight,
+                                                bboxCornerX, bboxCornerY);
+                        SmartDashboard.putDouble("Target ratio", bboxWidth/bboxHeight);
+                        SmartDashboard.putDouble("Target area percent", area/convexArea);
+                        SmartDashboard.putDouble("Target area", area);
+                        SmartDashboard.putDouble("Target box area", convexArea);
+                        SmartDashboard.putDouble("Target score", score);
                     }
                 }
                 // Important! Normally you don't have to do this in Java, but
@@ -118,6 +126,7 @@ public class TargetFinder {
                 ex.printStackTrace();
             }
         }
+        return success;
     }
 
     public Target getTarget() {

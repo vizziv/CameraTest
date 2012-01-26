@@ -10,14 +10,13 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class PrintTargetCmd extends CommandBase {
 
+    boolean success = false;
+
     public PrintTargetCmd() {
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        tracker.processImage();
-        SmartDashboard.putDouble("Target X", tracker.getTarget().centerX);
-        SmartDashboard.putDouble("Target Y", tracker.getTarget().centerY);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -26,7 +25,12 @@ public class PrintTargetCmd extends CommandBase {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return true;
+        success = tracker.processImage();
+        if(success) {
+            SmartDashboard.putDouble("Target X", tracker.getTarget().centerX);
+            SmartDashboard.putDouble("Target Y", tracker.getTarget().centerY);
+        }
+        return success;
     }
 
     // Called once after isFinished returns true
