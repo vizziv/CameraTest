@@ -8,7 +8,6 @@ import edu.wpi.first.wpilibj.image.BinaryImage;
 import edu.wpi.first.wpilibj.image.ColorImage;
 import edu.wpi.first.wpilibj.image.NIVision;
 import edu.wpi.first.wpilibj.image.NIVisionException;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Identifies rectangular targets on backboards using Axis camera. Processing
@@ -19,10 +18,6 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public class TargetFinder {
 
-    // TODO: Find out what coordinate system camera uses.
-    // Right now assuming (0,0) (1,0) (2,0)
-    //                    (0,1) (1,1) (2,1) etc.
-
     // TODO: Tune these constants.
     private int hueLow = 42;
     private int hueHigh = 128;
@@ -30,15 +25,19 @@ public class TargetFinder {
     private int satHigh = 255;
     private int lumLow = 196;
     private int lumHigh = 255;
-    private double idealAreaPercent = 80.0/432.0; // (tape area)/(rectangle area)
-    private double idealRatio = 4.0/3.0;
-    private double minScore = .5;
+    private double boxinessIdeal = 80.0/432.0; // (tape area)/(rectangle area)
+    private double boxinessTolerance = .5;
+    private double ratioIdeal = 4.0/3.0;
+    private double ratioTolerance = 1;
+    private double inertiaIdeal = .5;
+    private double inertiaTolerance = .5;
     private int minArea = 500;
+    private double minScore = .9;
 
     AxisCamera cam;
     private ColorImage colImage;
     private BinaryImage binImage;
-    private Target bestTarget = Target.InvalidTarget;
+    private Target bestTarget = Target.NullTarget;
     private int imageHeight;
 
     public TargetFinder() {
@@ -47,31 +46,14 @@ public class TargetFinder {
         imageHeight = cam.getResolution().height;
     }
 
-    private void setConstants() {
-        SmartDashboard.putInt("Camera: hue lower bound", hueLow);
-        SmartDashboard.putInt("Camera: hue upper bound", hueHigh);
-        SmartDashboard.putInt("Camera: saturation lower bound", satLow);
-        SmartDashboard.putInt("Camera: saturation upper bound", satHigh);
-        SmartDashboard.putInt("Camera: lightness lower bound", lumLow);
-        SmartDashboard.putInt("Camera: lightness upper bound", lumHigh);
-        hueLow = SmartDashboard.getInt("Camera: set hue lower bound", hueLow);
-        hueHigh = SmartDashboard.getInt("Camera: set hue upper bound", hueHigh);
-        satLow = SmartDashboard.getInt("Camera: set saturation lower bound", satLow);
-        satHigh = SmartDashboard.getInt("Camera: set saturation upper bound", satHigh);
-        lumLow = SmartDashboard.getInt("Camera: set lightness lower bound", lumLow);
-        lumHigh = SmartDashboard.getInt("Camera: set lightness upper nound", lumHigh);
-    }
-
-    private double particleScore(double area, double convexArea,
-                                 double bboxWidth, double bboxHeight) {
-        double areaPercent = area / convexArea;
-        double ratio = bboxWidth / bboxHeight;
-        return Utils.falloff(areaPercent, idealAreaPercent) *
-                Utils.falloff(ratio, idealRatio);
+    private double targetScore(Target target) {
+        double boxinessScore = Utils.normalDist(target.boxiness, boxinessIdeal, boxinessTolerance);
+        double ratioScore = Utils.normalDist(target.ratio, ratioIdeal, ratioTolerance);
+        double inertiaScore = Utils.normalDist(target.inertia, inertiaIdeal, inertiaTolerance);
+        return boxinessScore * ratioScore * inertiaScore;
     }
 
     public boolean processImage() {
-        setConstants();
         boolean success = cam.freshImage();
         if(success) {
             try {
@@ -81,36 +63,38 @@ public class TargetFinder {
                                                  lumLow, lumHigh);
                 Pointer im = binImage.image;
                 int numParticles = NIVision.countParticles(im);
-                SmartDashboard.putInt("Number of particles", numParticles);
                 // Loop through every particle and calculate a score for each.
                 // Partciles that have good enough scores are targets.
                 // Keep track of the highest target; that's the one we want.
                 double best = 0;
-                bestTarget = Target.InvalidTarget;
+                bestTarget = Target.NullTarget;
                 for(int i = 0; i < numParticles; i++) {
                     double area = NIVision.MeasureParticle(im, i, false,
                             NIVision.MeasurementType.IMAQ_MT_AREA);
-                    double bboxWidth = NIVision.MeasureParticle(im, i, false,
-                            NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH);
-                    double bboxHeight = NIVision.MeasureParticle(im, i, false,
-                            NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT);
-                    double bboxCornerX = NIVision.MeasureParticle(im, i, false,
-                            NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_LEFT);
-                    double bboxCornerY = NIVision.MeasureParticle(im, i, false,
-                            NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_TOP);
-                    //double convexArea = NIVision.MeasureParticle(im, i, false,
-                    //        NIVision.MeasurementType.IMAQ_MT_CONVEX_HULL_AREA);
-                    double convexArea = bboxWidth*bboxHeight;
-                    double score = particleScore(area, convexArea, bboxWidth, bboxHeight);
-                    if(score >= best) {
-                        best = score;
-                        bestTarget = new Target(bboxWidth, bboxHeight,
-                                                bboxCornerX, bboxCornerY);
-                        SmartDashboard.putDouble("Target ratio", bboxWidth/bboxHeight);
-                        SmartDashboard.putDouble("Target area percent", area/convexArea);
-                        SmartDashboard.putDouble("Target area", area);
-                        SmartDashboard.putDouble("Target box area", convexArea);
-                        SmartDashboard.putDouble("Target score", score);
+                    if(area > minArea) {
+                        double bboxWidth = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH);
+                        double bboxHeight = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT);
+                        double bboxCornerX = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_LEFT);
+                        double bboxCornerY = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_TOP);
+                        double convexArea = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_CONVEX_HULL_AREA);
+                        double inertiaX = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_XX);
+                        double inertiaY = NIVision.MeasureParticle(im, i, false,
+                                NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_YY);
+                        Target target = new Target(bboxCornerX, bboxCornerY,
+                                                   area, convexArea,
+                                                   bboxWidth, bboxHeight,
+                                                   inertiaX, inertiaY);
+                        double score = targetScore(target);
+                        if(score >= best) {
+                            best = score;
+                            bestTarget = target;
+                        }
                     }
                 }
                 // Important! Normally you don't have to do this in Java, but
@@ -118,6 +102,7 @@ public class TargetFinder {
                 // memory used by the images.
                 colImage.free();
                 binImage.free();
+                // TODO: Find out if we need im.free() here.
             }
             catch(AxisCameraException ex) {
                 ex.printStackTrace();
