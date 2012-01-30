@@ -27,8 +27,8 @@ public class PrintTargetCmd extends CommandBase {
     protected boolean isFinished() {
         success = tracker.processImage();
         if(success) {
-            SmartDashboard.putDouble("Target X", tracker.getTarget().centerX);
-            SmartDashboard.putDouble("Target Y", tracker.getTarget().centerY);
+            SmartDashboard.putDouble("Target X", tracker.getTarget1().centerX);
+            SmartDashboard.putDouble("Target Y", tracker.getTarget1().centerY);
         }
         return success;
     }
