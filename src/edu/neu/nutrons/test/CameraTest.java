@@ -7,7 +7,6 @@
 
 package edu.neu.nutrons.test;
 
-
 import edu.neu.nutrons.test.commands.CommandBase;
 import edu.neu.nutrons.test.commands.DTManualCmd;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -62,5 +61,13 @@ public class CameraTest extends IterativeRobot {
      */
     public void teleopPeriodic() {
         Scheduler.getInstance().run();
+    }
+
+    /**
+     * This function is called continuously during operator control
+     */
+    public void teleopContinuous() {
+        CommandBase.tracker.processImage();
+        CommandBase.dash.sendData();
     }
 }

@@ -3,8 +3,9 @@ package edu.neu.nutrons.test.commands;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * Processes camera image and prints target's coordinates on dashboard. If there
- * is no target, the values printed are -1.
+ * DEPRECATED
+ * Processes camera image and prints target's coordinates on dashboard. Doesn't
+ * finish until a target is found.
  *
  * @author Ziv
  */
@@ -21,17 +22,14 @@ public class PrintTargetCmd extends CommandBase {
 
     // Called repeatedly when this Command is scheduled to run
     protected void execute() {
+        SmartDashboard.putDouble("Target X", tracker.getTarget1().centerX);
+        SmartDashboard.putDouble("Target Y", tracker.getTarget1().centerY);
+        dash.sendData();
     }
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        success = tracker.processImage();
-        if(success) {
-            SmartDashboard.putDouble("Target X", tracker.getTarget1().centerX);
-            SmartDashboard.putDouble("Target Y", tracker.getTarget1().centerY);
-            dash.sendData();
-        }
-        return success;
+        return tracker.getTarget1().isNotNull();
     }
 
     // Called once after isFinished returns true

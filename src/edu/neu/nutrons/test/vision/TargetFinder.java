@@ -2,6 +2,7 @@ package edu.neu.nutrons.test.vision;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
+import edu.wpi.first.wpilibj.camera.AxisCamera.ExposureT;
 import edu.wpi.first.wpilibj.camera.AxisCamera.WhiteBalanceT;
 import edu.wpi.first.wpilibj.camera.AxisCameraException;
 import edu.wpi.first.wpilibj.image.*;
@@ -15,11 +16,10 @@ import edu.wpi.first.wpilibj.image.*;
  */
 public class TargetFinder {
 
-    // TODO: Tune these constants.
-    private final int redLow = 40;
-    private final int redHigh = 170;
+    private final int redLow = 25;
+    private final int redHigh = 102;
     private final int greenLow = 10;
-    private final int greenHigh = 85;
+    private final int greenHigh = 26;
     private final int blueLow = 0;
     private final int blueHigh = 16;
     private final int bboxWidthMin = 24;
@@ -30,16 +30,16 @@ public class TargetFinder {
     private final double ratioMax = 2;
     private final int camBrightness = 10;
     private final int camColor = 100;
-    private final WhiteBalanceT camWhiteBalance = WhiteBalanceT.fixedFlour1;
-
+    private final WhiteBalanceT camWhiteBalance = WhiteBalanceT.hold;
+    private final ExposureT camExposure = ExposureT.hold;
+    public static final int IMAGE_WIDTH = 320;
+    public static final int IMAGE_HEIGHT = 240;
     AxisCamera cam;
     private Target highTarget = Target.NullTarget;
     private Target target1 = Target.NullTarget;
     private Target target2 = Target.NullTarget;
     private Target target3 = Target.NullTarget;
     private Target target4 = Target.NullTarget;
-    private final int imageWidth;
-    private final int imageHeight;
     private CriteriaCollection boxCriteria;
     private CriteriaCollection inertiaCriteria;
 
@@ -49,8 +49,7 @@ public class TargetFinder {
         cam.writeBrightness(camBrightness);
         cam.writeColorLevel(camColor);
         cam.writeWhiteBalance(camWhiteBalance);
-        imageWidth = cam.getResolution().width;
-        imageHeight = cam.getResolution().height;
+        cam.writeExposureControl(camExposure);
         boxCriteria = new CriteriaCollection();
         inertiaCriteria = new CriteriaCollection();
         boxCriteria.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH,
@@ -65,16 +64,16 @@ public class TargetFinder {
 
     private void addTarget(Target t) {
         // Fill the first empty target slot.
-        if(!target1.isNotNull()) {
+        if(target1.isNull()) {
             target1 = t;
         }
-        else if(!target2.isNotNull()) {
+        else if(target2.isNull()) {
             target2 = t;
         }
-        else if(!target3.isNotNull()) {
+        else if(target3.isNull()) {
             target3 = t;
         }
-        else if(!target4.isNotNull()) {
+        else if(target4.isNull()) {
             target4 = t;
         }
     }
@@ -97,7 +96,7 @@ public class TargetFinder {
                 target2 = Target.NullTarget;
                 target3 = Target.NullTarget;
                 target4 = Target.NullTarget;
-                double minY = imageHeight; // Minimum y <-> higher in image.
+                double minY = IMAGE_HEIGHT; // Minimum y <-> higher in image.
                 System.out.println(particles.length + " particles at " + Timer.getFPGATimestamp());
                 for(int i=0; i < particles.length; i++) {
                     Target t = new Target(i, particles[i]);

@@ -1,6 +1,6 @@
 package edu.neu.nutrons.test;
 
-import edu.neu.nutrons.test.commands.PrintTargetCmd;
+import edu.neu.nutrons.test.commands.TurnToTargetCmd;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -14,10 +14,10 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 public class OI {
 
     private Joystick pad = new Joystick(RobotMap.PAD);
-    private Button targetBtn = new JoystickButton(pad, 1);
+    private Button turnToTargetBtn = new JoystickButton(pad, 4);
 
     public OI() {
-        targetBtn.whenPressed(new PrintTargetCmd());
+        turnToTargetBtn.whileHeld(new TurnToTargetCmd());
     }
 
     public double lPowerDT() {

@@ -21,7 +21,11 @@ public class DriveTrain extends Subsystem {
 
     public void driveLR(double lPower, double rPower) {
         lMotor.set(-lPower);
-        rMotor.set(-rPower);
+        rMotor.set(rPower);
+    }
+
+    public void spin(double wheel) {
+        driveLR(wheel, -wheel);
     }
 
     public void stop() {
