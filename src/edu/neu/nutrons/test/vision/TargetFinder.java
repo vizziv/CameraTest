@@ -16,14 +16,14 @@ import edu.wpi.first.wpilibj.image.*;
 public class TargetFinder {
 
     // TODO: Tune these constants.
-    private final int redLow = 0;
-    private final int redHigh = 195;
-    private final int greenLow = 180;
-    private final int greenHigh = 255;
-    private final int blueLow = 115;
-    private final int blueHigh = 239;
-    private final int bboxWidthMin = 16;
-    //private final int bboxHeightMin = 12;
+    private final int redLow = 40;
+    private final int redHigh = 170;
+    private final int greenLow = 10;
+    private final int greenHigh = 85;
+    private final int blueLow = 0;
+    private final int blueHigh = 16;
+    private final int bboxWidthMin = 24;
+    //private final int bboxHeightMin = 18;
     private final float inertiaXMin = .32f;
     //private final float inertiaYMin = .18f;
     private final double ratioMin = 1;
@@ -64,16 +64,17 @@ public class TargetFinder {
     }
 
     private void addTarget(Target t) {
-        if(target1.isNotNull()) {
+        // Fill the first empty target slot.
+        if(!target1.isNotNull()) {
             target1 = t;
         }
-        else if(target2.isNotNull()) {
+        else if(!target2.isNotNull()) {
             target2 = t;
         }
-        else if(target3.isNotNull()) {
+        else if(!target3.isNotNull()) {
             target3 = t;
         }
-        else if(target4.isNotNull()) {
+        else if(!target4.isNotNull()) {
             target4 = t;
         }
     }

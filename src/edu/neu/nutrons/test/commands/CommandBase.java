@@ -1,5 +1,6 @@
 package edu.neu.nutrons.test.commands;
 
+import edu.neu.nutrons.test.LVDashboard;
 import edu.neu.nutrons.test.OI;
 import edu.neu.nutrons.test.subsystems.DriveTrain;
 import edu.neu.nutrons.test.vision.TargetFinder;
@@ -17,6 +18,7 @@ public abstract class CommandBase extends Command {
     public static OI oi;
     public static DriveTrain dt = new DriveTrain();
     public static TargetFinder tracker = new TargetFinder();
+    public static LVDashboard dash = new LVDashboard();
 
     public static void init() {
         // This MUST be here. If the OI creates Commands (which it very likely

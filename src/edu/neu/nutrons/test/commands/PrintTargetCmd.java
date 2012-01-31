@@ -29,6 +29,7 @@ public class PrintTargetCmd extends CommandBase {
         if(success) {
             SmartDashboard.putDouble("Target X", tracker.getTarget1().centerX);
             SmartDashboard.putDouble("Target Y", tracker.getTarget1().centerY);
+            dash.sendData();
         }
         return success;
     }
