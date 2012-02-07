@@ -1,6 +1,6 @@
 package edu.neu.nutrons.test.commands;
 
-import edu.neu.nutrons.test.LVDashboard;
+import edu.neu.nutrons.test.Dashboards;
 import edu.neu.nutrons.test.OI;
 import edu.neu.nutrons.test.subsystems.Camera;
 import edu.neu.nutrons.test.subsystems.DriveTrain;
@@ -14,11 +14,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public abstract class CommandBase extends Command {
 
-    // Single static instance of OI, camera cam and each subsystem.
+    // Single static instances of OI, subsystems and other things.
     public static OI oi;
     public static DriveTrain dt = new DriveTrain();
     public static Camera cam = new Camera();;
-    public static LVDashboard dash = new LVDashboard();
+    public static Dashboards dash = new Dashboards();
 
     public static void init() {
         // This MUST be here. If the OI creates Commands (which it very likely

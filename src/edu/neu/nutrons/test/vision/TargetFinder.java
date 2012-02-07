@@ -35,7 +35,7 @@ public class TargetFinder {
     public static final int IMAGE_WIDTH = 320;
     public static final int IMAGE_HEIGHT = 240;
 
-    private AxisCamera cam;
+    private AxisCamera cam = AxisCamera.getInstance();
     private Target highTarget = Target.NullTarget;
     private Target target1 = Target.NullTarget;
     private Target target2 = Target.NullTarget;
@@ -47,7 +47,6 @@ public class TargetFinder {
     private CriteriaCollection inertiaCriteriaY = new CriteriaCollection();
 
     public TargetFinder() {
-        cam = AxisCamera.getInstance();
         cam.writeResolution(AxisCamera.ResolutionT.k320x240);
         cam.writeBrightness(camBrightness);
         cam.writeColorLevel(camColor);

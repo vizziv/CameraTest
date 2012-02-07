@@ -1,7 +1,6 @@
 package edu.neu.nutrons.test.vision;
 
 import edu.wpi.first.wpilibj.image.ParticleAnalysisReport;
-import edu.neu.nutrons.test.commands.CommandBase;
 
 /**
  * Container for rectangular target information.

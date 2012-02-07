@@ -16,4 +16,5 @@ public class RobotMap {
     public static final int L_DRIVE_ENC_B = 4;
     public static final int R_DRIVE_ENC_A = 1;
     public static final int R_DRIVE_ENC_B = 2;
+    public static final int GYRO = 1;
 }

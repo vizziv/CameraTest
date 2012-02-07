@@ -2,7 +2,6 @@ package edu.neu.nutrons.test.subsystems;
 
 import edu.neu.nutrons.test.RobotMap;
 import edu.neu.nutrons.test.commands.CamSetPosCmd;
-import edu.neu.nutrons.test.commands.CommandBase;
 import edu.neu.nutrons.test.vision.TargetFinder;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -14,10 +13,10 @@ import edu.wpi.first.wpilibj.command.PIDSubsystem;
  */
 public class Camera extends PIDSubsystem {
 
-    public TargetFinder tracker = new TargetFinder();
-    private Servo servo = new Servo(RobotMap.CAM_SERVO);
     private static final double kp = .125;
-    private static final double kDrive = .125;
+
+    public final TargetFinder tracker = new TargetFinder();
+    private Servo servo = new Servo(RobotMap.CAM_SERVO);
 
     public Camera() {
         super(kp, 0, 0);
@@ -39,8 +38,7 @@ public class Camera extends PIDSubsystem {
 
     protected void usePIDOutput(double output) {
         // Change position by PID output.
-        double wheel = CommandBase.dt.getWheel();
-        setPos(getPos() + output - kDrive*wheel*Math.abs(wheel));
+        setPos(getPos() + output);
     }
 
     protected void initDefaultCommand() {

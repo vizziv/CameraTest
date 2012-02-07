@@ -1,8 +1,6 @@
 package edu.neu.nutrons.test;
 
-import edu.neu.nutrons.test.commands.CamPointAtTargetCmd;
-import edu.neu.nutrons.test.commands.CamSetPosCmd;
-import edu.neu.nutrons.test.commands.DTTurnToTargetCmd;
+import edu.neu.nutrons.test.commands.*;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -22,6 +20,8 @@ public class OI {
     private Button camPoint = new JoystickButton(pad, 4);
     private Button dtTurnToTargetServo = new JoystickButton(pad, 5);
     private Button dtTurnToTarget = new JoystickButton(pad, 6);
+    private Button dtUsePID = new JoystickButton(pad, 7);
+    private Button gyroToCam = new JoystickButton(pad, 8);
 
     public OI() {
         camLeft.whenPressed(new CamSetPosCmd(-1));
@@ -30,6 +30,8 @@ public class OI {
         camPoint.whenPressed(new CamPointAtTargetCmd());
         dtTurnToTargetServo.whileHeld(new DTTurnToTargetCmd(true));
         dtTurnToTarget.whileHeld(new DTTurnToTargetCmd(false));
+        dtUsePID.whileHeld(new DTUsePIDCmd());
+        gyroToCam.whenPressed(new ResetGyroToCamServoCmd());
     }
 
     public double lPowerDT() {

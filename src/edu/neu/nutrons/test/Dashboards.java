@@ -3,6 +3,7 @@ package edu.neu.nutrons.test;
 import edu.neu.nutrons.test.commands.CommandBase;
 import edu.wpi.first.wpilibj.Dashboard;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
  * Sends data back to LabVIEW dashboard on computer. For camera targeting data,
@@ -10,12 +11,13 @@ import edu.wpi.first.wpilibj.DriverStation;
  *
  * @author Ziv
  */
-public class LVDashboard {
+public class Dashboards {
 
     private DriverStation ds = DriverStation.getInstance();
     private Dashboard dash = ds.getDashboardPackerLow();
 
     public void sendData() {
+        // LabVIEW stuff.
         dash.addCluster(); // top
             dash.addCluster(); // target1 tracking
                 dash.addInt((int)CommandBase.cam.tracker.getTarget1().rawBboxCornerX);
@@ -43,5 +45,9 @@ public class LVDashboard {
             dash.finalizeCluster();
         dash.finalizeCluster();
         dash.commit();
+        // SmartDashboard stuff.
+        SmartDashboard.putDouble("Gyro", CommandBase.dt.gyro.getAngle());
+        SmartDashboard.putDouble("Target X", CommandBase.cam.tracker.getTarget1().centerX);
+        SmartDashboard.putDouble("Cam Servo", CommandBase.cam.getPos());
     }
 }

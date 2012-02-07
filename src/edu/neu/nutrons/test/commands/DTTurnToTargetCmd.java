@@ -10,6 +10,7 @@ public class DTTurnToTargetCmd extends CommandBase {
     private static final double TOLERANCE = .05;
     private static final double kp = 1.5;
     private static final double servoKpScale = 1;
+    
     private boolean useCamServo = false;
 
     public DTTurnToTargetCmd() {

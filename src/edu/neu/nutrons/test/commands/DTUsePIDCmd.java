@@ -1,19 +1,28 @@
 package edu.neu.nutrons.test.commands;
 
+import edu.wpi.first.wpilibj.Timer;
+
 /**
- * Turns camera until target is in the center.
+ * Used for debugging drive train turning PID.
  *
  * @author Ziv
  */
-public class CamPointAtTargetCmd extends CommandBase {
+public class DTUsePIDCmd extends CommandBase {
 
-    public CamPointAtTargetCmd() {
-        requires(cam);
+    private static final double TOLERANCE = 3;
+    private static final double TIME_SETTLE = .5;
+    
+    private Timer t = new Timer();
+
+    public DTUsePIDCmd() {
+        requires(dt);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        cam.enable();
+        t.reset();
+        t.start();
+        dt.enable();
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -22,12 +31,15 @@ public class CamPointAtTargetCmd extends CommandBase {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return cam.tracker.getTarget1().isNull();
+        if(Math.abs(dt.getSetpoint() - dt.getPosition()) > TOLERANCE){
+            t.reset();
+        }
+        return t.get() > TIME_SETTLE;
     }
 
     // Called once after isFinished returns true
     protected void end() {
-        cam.disable();
+        dt.disable();
     }
 
     // Called when another command which requires one or more of the same
