@@ -2,8 +2,8 @@ package edu.neu.nutrons.test.commands;
 
 import edu.neu.nutrons.test.LVDashboard;
 import edu.neu.nutrons.test.OI;
+import edu.neu.nutrons.test.subsystems.Camera;
 import edu.neu.nutrons.test.subsystems.DriveTrain;
-import edu.neu.nutrons.test.vision.TargetFinder;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -14,10 +14,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  */
 public abstract class CommandBase extends Command {
 
-    // Single static instance of OI, camera tracker and each subsystem.
+    // Single static instance of OI, camera cam and each subsystem.
     public static OI oi;
     public static DriveTrain dt = new DriveTrain();
-    public static TargetFinder tracker = new TargetFinder();
+    public static Camera cam = new Camera();;
     public static LVDashboard dash = new LVDashboard();
 
     public static void init() {
@@ -30,6 +30,7 @@ public abstract class CommandBase extends Command {
 
         // Show what command each subsystem is running on SmartDashboard.
         SmartDashboard.putData(dt);
+        SmartDashboard.putData(cam);
     }
 
     public CommandBase(String name) {

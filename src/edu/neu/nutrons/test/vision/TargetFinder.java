@@ -1,6 +1,5 @@
 package edu.neu.nutrons.test.vision;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.camera.AxisCamera;
 import edu.wpi.first.wpilibj.camera.AxisCamera.ExposureT;
 import edu.wpi.first.wpilibj.camera.AxisCamera.WhiteBalanceT;
@@ -17,31 +16,35 @@ import edu.wpi.first.wpilibj.image.*;
 public class TargetFinder {
 
     private final int redLow = 25;
-    private final int redHigh = 102;
+    private final int redHigh = 120;
     private final int greenLow = 10;
-    private final int greenHigh = 26;
+    private final int greenHigh = 40;
     private final int blueLow = 0;
-    private final int blueHigh = 16;
+    private final int blueHigh = 30;
     private final int bboxWidthMin = 24;
-    //private final int bboxHeightMin = 18;
+    private final int bboxHeightMin = 18;
     private final float inertiaXMin = .32f;
-    //private final float inertiaYMin = .18f;
+    private final float inertiaYMin = .18f;
     private final double ratioMin = 1;
     private final double ratioMax = 2;
+    private final double rectitudeMin = 0.75;
     private final int camBrightness = 10;
     private final int camColor = 100;
     private final WhiteBalanceT camWhiteBalance = WhiteBalanceT.hold;
     private final ExposureT camExposure = ExposureT.hold;
     public static final int IMAGE_WIDTH = 320;
     public static final int IMAGE_HEIGHT = 240;
-    AxisCamera cam;
+
+    private AxisCamera cam;
     private Target highTarget = Target.NullTarget;
     private Target target1 = Target.NullTarget;
     private Target target2 = Target.NullTarget;
     private Target target3 = Target.NullTarget;
     private Target target4 = Target.NullTarget;
-    private CriteriaCollection boxCriteria;
-    private CriteriaCollection inertiaCriteria;
+    private CriteriaCollection boxCriteriaX = new CriteriaCollection();
+    private CriteriaCollection boxCriteriaY = new CriteriaCollection();
+    private CriteriaCollection inertiaCriteriaX = new CriteriaCollection();
+    private CriteriaCollection inertiaCriteriaY = new CriteriaCollection();
 
     public TargetFinder() {
         cam = AxisCamera.getInstance();
@@ -50,16 +53,14 @@ public class TargetFinder {
         cam.writeColorLevel(camColor);
         cam.writeWhiteBalance(camWhiteBalance);
         cam.writeExposureControl(camExposure);
-        boxCriteria = new CriteriaCollection();
-        inertiaCriteria = new CriteriaCollection();
-        boxCriteria.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH,
+        boxCriteriaX.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_WIDTH,
                              0, bboxWidthMin, true);
-        //boxCriteria.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT,
-        //                     0, bboxHeightMin, true);
-        inertiaCriteria.addCriteria(NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_XX,
+        boxCriteriaY.addCriteria(NIVision.MeasurementType.IMAQ_MT_BOUNDING_RECT_HEIGHT,
+                             0, bboxHeightMin, true);
+        inertiaCriteriaX.addCriteria(NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_XX,
                              0, inertiaXMin, true);
-        //inertiaCriteria.addCriteria(NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_YY,
-        //                     0, inertiaYMin, true);
+        inertiaCriteriaY.addCriteria(NIVision.MeasurementType.IMAQ_MT_NORM_MOMENT_OF_INERTIA_YY,
+                             0, inertiaYMin, true);
     }
 
     private void addTarget(Target t) {
@@ -86,34 +87,47 @@ public class TargetFinder {
                 BinaryImage thresholdIm = im.thresholdRGB(redLow, redHigh,
                                                           greenLow, greenHigh,
                                                           blueLow, blueHigh);
-                BinaryImage filteredBoxIm = thresholdIm.particleFilter(boxCriteria);
-                BinaryImage filteredInertiaIm = filteredBoxIm.particleFilter(inertiaCriteria);
-                ParticleAnalysisReport[] particles = filteredInertiaIm.getOrderedParticleAnalysisReports();
-                // Loop through targets, find highest one.
-                // Targets aren't found yet.
+                // We want targets to meet ALL criteria (not ANY), so we use
+                // multiple filters.
+                // The criteria:
+                // -Bounding box at least 24x18.
+                // -Moment of inertias are at least .32 (x^2) and .18 (y^2).
+                //  This leaves only hollow particles.
+                BinaryImage filteredIm1 = thresholdIm.particleFilter(boxCriteriaX);
+                BinaryImage filteredIm2 = filteredIm1.particleFilter(boxCriteriaY);
+                BinaryImage filteredIm3 = filteredIm2.particleFilter(inertiaCriteriaX);
+                BinaryImage filteredIm4 = filteredIm3.particleFilter(inertiaCriteriaY);
+                // Look at convex hull of what's left.
+                BinaryImage convexHullIm = filteredIm4.convexHull(true);
+                ParticleAnalysisReport[] particles = convexHullIm.getOrderedParticleAnalysisReports();
+                // Loop through targets, keep track of highest one.
+                // Dispose of those that have an extreme length/width ratio or
+                // aren't very rectangular (don't fill their bounding box).
+                // Initially assume that no targets are found.
                 highTarget = Target.NullTarget;
                 target1 = Target.NullTarget;
                 target2 = Target.NullTarget;
                 target3 = Target.NullTarget;
                 target4 = Target.NullTarget;
                 double minY = IMAGE_HEIGHT; // Minimum y <-> higher in image.
-                System.out.println(particles.length + " particles at " + Timer.getFPGATimestamp());
                 for(int i=0; i < particles.length; i++) {
                     Target t = new Target(i, particles[i]);
-                    if(t.ratio > ratioMin && t.ratio < ratioMax) {
+                    if(t.ratio > ratioMin && t.ratio < ratioMax &&
+                           t.rectitude > rectitudeMin) {
                         addTarget(t);
                         if(t.centerY <= minY) {
                             highTarget = t;
                         }
                     }
-                    System.out.println("Target " + i + ": (" + t.centerX + "," + t.centerY + ")");
                 }
-                System.out.println("Best target: " + highTarget.index);
-                // Free memory from images.
+                // Free memory used by images.
                 im.free();
                 thresholdIm.free();
-                filteredBoxIm.free();
-                filteredInertiaIm.free();
+                filteredIm1.free();
+                filteredIm2.free();
+                filteredIm3.free();
+                filteredIm4.free();
+                convexHullIm.free();
             }
             catch(AxisCameraException ex) {
                 ex.printStackTrace();

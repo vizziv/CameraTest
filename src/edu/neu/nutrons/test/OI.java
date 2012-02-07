@@ -1,6 +1,8 @@
 package edu.neu.nutrons.test;
 
-import edu.neu.nutrons.test.commands.TurnToTargetCmd;
+import edu.neu.nutrons.test.commands.CamPointAtTargetCmd;
+import edu.neu.nutrons.test.commands.CamSetPosCmd;
+import edu.neu.nutrons.test.commands.DTTurnToTargetCmd;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.Button;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -14,10 +16,20 @@ import edu.wpi.first.wpilibj.buttons.JoystickButton;
 public class OI {
 
     private Joystick pad = new Joystick(RobotMap.PAD);
-    private Button turnToTargetBtn = new JoystickButton(pad, 4);
+    private Button camLeft = new JoystickButton(pad, 1);
+    private Button camCenter = new JoystickButton(pad, 2);
+    private Button camRight = new JoystickButton(pad, 3);
+    private Button camPoint = new JoystickButton(pad, 4);
+    private Button dtTurnToTargetServo = new JoystickButton(pad, 5);
+    private Button dtTurnToTarget = new JoystickButton(pad, 6);
 
     public OI() {
-        turnToTargetBtn.whileHeld(new TurnToTargetCmd());
+        camLeft.whenPressed(new CamSetPosCmd(-1));
+        camCenter.whenPressed(new CamSetPosCmd(0));
+        camRight.whenPressed(new CamSetPosCmd(1));
+        camPoint.whenPressed(new CamPointAtTargetCmd());
+        dtTurnToTargetServo.whileHeld(new DTTurnToTargetCmd(true));
+        dtTurnToTarget.whileHeld(new DTTurnToTargetCmd(false));
     }
 
     public double lPowerDT() {

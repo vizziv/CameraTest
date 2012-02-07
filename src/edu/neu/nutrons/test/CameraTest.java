@@ -25,24 +25,23 @@ public class CameraTest extends IterativeRobot {
     Command autonomousCommand;
 
     /**
-     * This function is run when the robot is first started up and should be
-     * used for any initialization code.
+     * Run when the robot starts up. Initialization code goes here.
      */
     public void robotInit() {
-        // instantiate the command used for the autonomous period
+        // Instantiate the command used for the autonomous period.
         autonomousCommand = new DTManualCmd();
 
-        // Initialize all subsystems
+        // Initialize all subsystems.
         CommandBase.init();
     }
 
     public void autonomousInit() {
-        // schedule the autonomous command (example)
+        // Schedule the autonomous command.
         autonomousCommand.start();
     }
 
     /**
-     * This function is called periodically during autonomous
+     * Called periodically during autonomous.
      */
     public void autonomousPeriodic() {
         Scheduler.getInstance().run();
@@ -50,24 +49,22 @@ public class CameraTest extends IterativeRobot {
 
     public void teleopInit() {
 		// This makes sure that the autonomous stops running when
-		// teleop starts running. If you want the autonomous to
-		// continue until interrupted by another command, remove
-		// this line or comment it out.
+		// teleop starts running.
 		autonomousCommand.cancel();
     }
 
     /**
-     * This function is called periodically during operator control
+     * Called periodically during operator control.
      */
     public void teleopPeriodic() {
         Scheduler.getInstance().run();
     }
 
     /**
-     * This function is called continuously during operator control
+     * Called continuously during operator control.
      */
     public void teleopContinuous() {
-        CommandBase.tracker.processImage();
+        CommandBase.cam.tracker.processImage();
         CommandBase.dash.sendData();
     }
 }

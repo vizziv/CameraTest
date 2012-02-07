@@ -1,22 +1,20 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+package edu.neu.nutrons.test.commands;
 
 /**
+ * Turns camera until target is in the center.
  *
  * @author Ziv
  */
-public class TFDeactivateCmd extends CommandBase {
+public class CamPointAtTargetCmd extends CommandBase {
 
-    public TFDeactivateCmd() {
-        // Use requires() here to declare subsystem dependencies
-        // eg. requires(chassis);
+    public CamPointAtTargetCmd() {
+        requires(cam);
     }
 
     // Called just before this Command runs the first time
     protected void initialize() {
-        tracker.deactivate();
+        cam.enable();
+        cam.setSetpoint(0);
     }
 
     // Called repeatedly when this Command is scheduled to run
@@ -25,15 +23,17 @@ public class TFDeactivateCmd extends CommandBase {
 
     // Make this return true when this Command no longer needs to run execute()
     protected boolean isFinished() {
-        return true;
+        return cam.tracker.getTarget1().isNull();
     }
 
     // Called once after isFinished returns true
     protected void end() {
+        cam.disable();
     }
 
     // Called when another command which requires one or more of the same
     // subsystems is scheduled to run
     protected void interrupted() {
+        end();
     }
 }
