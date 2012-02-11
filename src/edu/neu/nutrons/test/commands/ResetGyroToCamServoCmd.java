@@ -13,7 +13,7 @@ public class ResetGyroToCamServoCmd extends CommandBase {
     // Called just before this Command runs the first time
     protected void initialize() {
         dt.gyro.reset();
-        dt.setSetpoint(90*cam.getPos());
+        dt.setSetpoint(cam.getAngle());
     }
 
     // Called repeatedly when this Command is scheduled to run

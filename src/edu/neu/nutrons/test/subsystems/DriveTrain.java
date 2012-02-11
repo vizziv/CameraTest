@@ -1,9 +1,9 @@
 package edu.neu.nutrons.test.subsystems;
 
+import edu.neu.nutrons.test.RelativeGyro;
 import edu.neu.nutrons.test.RobotMap;
 import edu.neu.nutrons.test.commands.DTManualCmd;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.Gyro;
 import edu.wpi.first.wpilibj.Jaguar;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
 
@@ -21,7 +21,7 @@ public class DriveTrain extends PIDSubsystem {
     private Jaguar rMotor = new Jaguar(RobotMap.R_DRIVE_MOTOR);
     private Encoder lEnc = new Encoder(RobotMap.L_DRIVE_ENC_A, RobotMap.L_DRIVE_ENC_B);
     private Encoder rEnc = new Encoder(RobotMap.R_DRIVE_ENC_A, RobotMap.R_DRIVE_ENC_B);
-    public final Gyro gyro = new Gyro(RobotMap.GYRO);
+    public final RelativeGyro gyro = new RelativeGyro(RobotMap.GYRO);
     private double lPower = 0;
     private double rPower = 0;
 

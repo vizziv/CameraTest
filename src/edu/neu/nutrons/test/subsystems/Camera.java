@@ -2,6 +2,7 @@ package edu.neu.nutrons.test.subsystems;
 
 import edu.neu.nutrons.test.RobotMap;
 import edu.neu.nutrons.test.commands.CamSetPosCmd;
+import edu.neu.nutrons.test.commands.CommandBase;
 import edu.neu.nutrons.test.vision.TargetFinder;
 import edu.wpi.first.wpilibj.Servo;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
@@ -38,11 +39,16 @@ public class Camera extends PIDSubsystem {
 
     protected void usePIDOutput(double output) {
         // Change position by PID output.
-        setPos(getPos() + output);
+        setPos(getPos() + output - CommandBase.dt.gyro.getAbsoluteAngle()/90.0);
     }
 
     protected void initDefaultCommand() {
         // Always try to keep target in the middle of camera image.
         setDefaultCommand(new CamSetPosCmd(0));
+    }
+
+    public double getAngle() {
+        // This assumes that signal is linear relative to angle.
+        return 90*getPos();
     }
 }
