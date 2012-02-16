@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.image.*;
  * @author Ziv
  */
 public class TargetFinder {
-
+    
     private final int redLow = 25;
     private final int redHigh = 120;
     private final int greenLow = 10;
@@ -91,23 +91,29 @@ public class TargetFinder {
                 // The criteria:
                 // -Bounding box at least 24x18.
                 // -Moment of inertias are at least .32 (x^2) and .18 (y^2).
-                //  This leaves only hollow particles.
+                //  (This selects for hollow particles.)
                 BinaryImage filteredIm1 = thresholdIm.particleFilter(boxCriteriaX);
                 BinaryImage filteredIm2 = filteredIm1.particleFilter(boxCriteriaY);
                 BinaryImage filteredIm3 = filteredIm2.particleFilter(inertiaCriteriaX);
                 BinaryImage filteredIm4 = filteredIm3.particleFilter(inertiaCriteriaY);
-                // Look at convex hull of what's left.
+                // Look at convex hull of what's left. As well as convex area
+                // being useful (see below), taking the convex hull of every
+                // particle eliminates the target-within-a-taget phenomenon that
+                // occasionally happens in bad lighting conditions (namely, when
+                // only the outer and inner edge of the retroreflective strips
+                // are picked up by the color threshold).
                 BinaryImage convexHullIm = filteredIm4.convexHull(true);
                 ParticleAnalysisReport[] particles = convexHullIm.getOrderedParticleAnalysisReports();
-                // Loop through targets, keep track of highest one.
-                // Dispose of those that have an extreme length/width ratio or
-                // aren't very rectangular (don't fill their bounding box).
                 // Initially assume that no targets are found.
+                // TODO: remember previous targets if we briefly lose track.
                 highTarget = Target.NullTarget;
                 target1 = Target.NullTarget;
                 target2 = Target.NullTarget;
                 target3 = Target.NullTarget;
                 target4 = Target.NullTarget;
+                // Loop through targets, keep track of highest one.
+                // Dispose of those that have an extreme length/width ratio or
+                // aren't very rectangular (don't fill their bounding box).
                 double minY = IMAGE_HEIGHT; // Minimum y <-> higher in image.
                 for(int i=0; i < particles.length; i++) {
                     Target t = new Target(i, particles[i]);
